@@ -1,12 +1,9 @@
 package com.cm.batch;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
+//@SpringBootTest
 class BatchProcessApplicationTests {
 
-	@Test
+	//@Test
 	void contextLoads() {
 	}
 
