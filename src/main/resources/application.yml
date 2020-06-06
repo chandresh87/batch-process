@@ -1,0 +1,27 @@
+server:
+  port: 8081
+  
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:26257/defaultdb?sslmode=disable&timezone=UTC
+    username: root
+    password: 
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      poolName: BatchDataBasePool
+      
+# Hibernate Configuration
+  jpa:
+    generate_ddl: false
+    show_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        jdbc:
+          time_zone: UTC
+  batch:
+    initialize-schema: always
+    table-prefix: defaultdb.cm_
+  #main:
+    #allow-bean-definition-overriding: true         
