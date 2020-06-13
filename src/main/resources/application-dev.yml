@@ -1,0 +1,5 @@
+s3:
+  local:
+    file:
+      path: D:/Data/Study/spring-batch
+    bucketName: testbucket
