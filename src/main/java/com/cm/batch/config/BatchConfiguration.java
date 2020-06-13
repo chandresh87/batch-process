@@ -79,10 +79,13 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     @Qualifier("split-body-footer-task")
     private MethodInvokingTaskletAdapter systemCommandTasklet;
 
+    @Autowired
+    private JobListener jobListener;
+
 
     @Bean("split-body-footer-task")
     @StepScope
-    public MethodInvokingTaskletAdapter preProcessFileAdapter(@Value("#{jobParameters['customerFile']}") String file, PreProcessFile preProcessFile)
+    public MethodInvokingTaskletAdapter preProcessFileAdapter(@Value("#{jobExecutionContext['customerFile']}") String file, PreProcessFile preProcessFile)
     {
         String workingDir = FilenameUtils.getFullPath(file);
         String fileName = FilenameUtils.getName(file);
@@ -144,7 +147,7 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
                 .next(readBodystep())
                 .validator(batchJobParamValidator)
                 .incrementer(jobParametersIncrementer)
-                .listener(JobListenerFactoryBean.getListener(new JobListener()))
+                .listener(jobListener)
                 .build();
     }
 

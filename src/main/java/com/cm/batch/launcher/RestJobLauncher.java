@@ -27,11 +27,10 @@ public class RestJobLauncher {
     private Job job;
 
     @PostMapping(path = "/run")
-    public Long runJob(String FilePath) throws Exception {
+    public Long runJob() throws Exception {
 
         JobParameters jobParameters =
-                new JobParametersBuilder(getJobParameters(FilePath),
-                        this.jobExplorer)
+                new JobParametersBuilder(this.jobExplorer)
                         .getNextJobParameters(job)
                         .toJobParameters();
 
@@ -39,11 +38,11 @@ public class RestJobLauncher {
 
     }
 
-    private JobParameters getJobParameters(String path) {
-        Properties properties = new Properties();
-        properties.put("customerFile", path);
-
-        return new JobParametersBuilder(properties)
-                .toJobParameters();
-    }
+//    private JobParameters getJobParameters(String path) {
+//        Properties properties = new Properties();
+//        properties.put("customerFile", path);
+//
+//        return new JobParametersBuilder(properties)
+//                .toJobParameters();
+//    }
 }

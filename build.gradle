@@ -26,6 +26,7 @@ dependencies {
 	implementation group: 'commons-io', name: 'commons-io', version: '2.7'
 	implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
 	implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+	implementation group: 'io.findify', name: 's3mock_2.13', version: '0.2.6'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'

@@ -20,7 +20,7 @@ public class PreProcessFileListener {
     public ExitStatus afterStep(StepExecution stepExecution) {
         logger.info("{}  ended with status {}", stepExecution.getStepName(), stepExecution.getExitStatus());
 
-        String fileName = stepExecution.getJobParameters().getString("customerFile");
+        String fileName = stepExecution.getJobExecution().getExecutionContext().getString("customerFile");
         String workingDir = FilenameUtils.getFullPath(fileName);
         logger.info("working dir set Input File Name {}", workingDir);
         stepExecution.getJobExecution().getExecutionContext().put("dataFile", workingDir + "input_body.txt");
