@@ -12,14 +12,16 @@ spring:
       
 # Hibernate Configuration
   jpa:
-    generate_ddl: false
+    generate_ddl: true
     show_sql: true
     properties:
       hibernate:
         format_sql: true
+        ddl-auto: create
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
         jdbc:
           time_zone: UTC
+
   batch:
     initialize-schema: always
     table-prefix: defaultdb.cm_

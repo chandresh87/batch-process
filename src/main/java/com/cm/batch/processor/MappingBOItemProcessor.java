@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 /**
  * @author chandresh.mishra
  */
-@Component("mapping-item-processor")
-public class MappingItemProcessor implements ItemProcessor<PersonDTO, PersonBO> {
+@Component("mapping-bo-item-processor")
+public class MappingBOItemProcessor implements ItemProcessor<PersonDTO, PersonBO> {
 
     private final PersonMapper personMapper;
 
-    public MappingItemProcessor(PersonMapper personMapper) {
+    public MappingBOItemProcessor(PersonMapper personMapper) {
         this.personMapper = personMapper;
     }
 

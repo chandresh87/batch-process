@@ -5,7 +5,7 @@ import com.cm.batch.listener.PreProcessFileListener;
 import com.cm.batch.listener.ReadFileStepListener;
 import com.cm.batch.modal.PersonBO;
 import com.cm.batch.modal.PersonDTO;
-import com.cm.batch.processor.MappingItemProcessor;
+import com.cm.batch.modal.PersonEntity;
 import com.cm.batch.reader.PreProcessFile;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.batch.core.Job;
@@ -40,7 +40,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 @Configuration
 @EnableBatchProcessing
@@ -51,8 +50,12 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     private ItemStreamReader<PersonDTO> personFileBodyReader;
 
     @Autowired
-    @Qualifier("dummuItemWriter")
+    @Qualifier("dummyItemWriter")
     private ItemWriter<PersonBO> dummyWriter;
+
+    @Autowired
+    @Qualifier("database-writer")
+    private ItemWriter<PersonEntity> personEntityItemWriter;
 
     @Autowired
     @Qualifier("batch-datasource")
@@ -93,21 +96,23 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     private BeanValidatingItemProcessor<PersonBO> beanValidatingItemProcessor;
 
     @Autowired
-    @Qualifier("mapping-item-processor")
+    @Qualifier("mapping-bo-item-processor")
     private ItemProcessor<PersonDTO, PersonBO> mappingItemProcessor;
 
+    @Autowired
+    @Qualifier("mapping-entity-item-processor")
+    private ItemProcessor<PersonBO, PersonEntity> personBOPersonEntityItemProcessor;
 
     @Bean("split-body-footer-task")
     @StepScope
-    public MethodInvokingTaskletAdapter preProcessFileAdapter(@Value("#{jobExecutionContext['customerFile']}") String file, PreProcessFile preProcessFile)
-    {
+    public MethodInvokingTaskletAdapter preProcessFileAdapter(@Value("#{jobExecutionContext['customerFile']}") String file, PreProcessFile preProcessFile) {
         String workingDir = FilenameUtils.getFullPath(file);
         String fileName = FilenameUtils.getName(file);
 
-        MethodInvokingTaskletAdapter methodInvokingTaskletAdapter=new MethodInvokingTaskletAdapter();
+        MethodInvokingTaskletAdapter methodInvokingTaskletAdapter = new MethodInvokingTaskletAdapter();
         methodInvokingTaskletAdapter.setTargetObject(preProcessFile);
         methodInvokingTaskletAdapter.setTargetMethod("processFile");
-        methodInvokingTaskletAdapter.setArguments(new String[]{fileName,workingDir});
+        methodInvokingTaskletAdapter.setArguments(new String[]{fileName, workingDir});
 
         return methodInvokingTaskletAdapter;
     }
@@ -132,37 +137,38 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     }
 
     @Bean
-	public Flow preProcessingFlow() {
+    public Flow preProcessingFlow() {
         return new FlowBuilder<Flow>("preProcessingFlow")
                 .start(extractFooterAndBodyStep())
                 .next(readFooterStep())
                 .build();
     }
+
     @Bean
-	public Step initializeBatch() {
-		return this.stepBuilderFactory.get("initializeBatch")
-				.flow(preProcessingFlow())
-				.build();
-	}
+    public Step initializeBatch() {
+        return this.stepBuilderFactory.get("initializeBatch")
+                .flow(preProcessingFlow())
+                .build();
+    }
 
-	@Bean
-	public CompositeItemProcessor<PersonDTO, PersonBO> itemProcessor() {
-		CompositeItemProcessor<PersonDTO, PersonBO> itemProcessor =
-				new CompositeItemProcessor<>();
+    @Bean
+    public CompositeItemProcessor<PersonDTO, PersonEntity> itemProcessor() {
+        CompositeItemProcessor<PersonDTO, PersonEntity> itemProcessor =
+                new CompositeItemProcessor<>();
 
-        List itemProcessors= Arrays.asList(mappingItemProcessor, beanValidatingItemProcessor);
-		itemProcessor.setDelegates(itemProcessors);
+        List itemProcessors = Arrays.asList(mappingItemProcessor, beanValidatingItemProcessor, personBOPersonEntityItemProcessor);
+        itemProcessor.setDelegates(itemProcessors);
 
-		return itemProcessor;
-	}
+        return itemProcessor;
+    }
 
     @Bean("readBodyStep")
     public Step readBodystep() {
         return this.stepBuilderFactory.get("readChunkStep")
-                .<PersonDTO, PersonBO>chunk(10)
+                .<PersonDTO, PersonEntity>chunk(10)
                 .reader(personFileBodyReader)
                 .processor(itemProcessor())
-                .writer(dummyWriter)
+                .writer(personEntityItemWriter)
                 .listener(new ReadFileStepListener())
                 .listener(personFileBodyReader)
                 .build();
@@ -171,8 +177,8 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     @Bean
     public Job job() {
         return this.jobBuilderFactory.get("person-job")
-                 .start(initializeBatch())
-                 .next(readBodystep())
+                .start(initializeBatch())
+                .next(readBodystep())
 //                 .on("STOPPED")
 //                 .stopAndRestart(initializeBatch())
 //                 .end()
@@ -183,10 +189,9 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     }
 
     @Bean
-    public ExecutionContextPromotionListener executionContextPromotionListener()
-    {
+    public ExecutionContextPromotionListener executionContextPromotionListener() {
         ExecutionContextPromotionListener executionContextPromotionListener = new ExecutionContextPromotionListener();
-        executionContextPromotionListener.setKeys(new String[] {"dataFile","footerFile","recordCount"});
+        executionContextPromotionListener.setKeys(new String[]{"dataFile", "footerFile", "recordCount"});
         return executionContextPromotionListener;
 
     }
