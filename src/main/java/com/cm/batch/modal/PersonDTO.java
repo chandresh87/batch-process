@@ -5,11 +5,10 @@ import lombok.Data;
 
 /**
  * @author chandresh.mishra
- *
  */
 @Data
 @Builder
-public class Person {
+public class PersonDTO {
 
     private String name;
     private String lastName;

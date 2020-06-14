@@ -1,6 +1,6 @@
 package com.cm.batch.reader;
 
-import com.cm.batch.modal.Person;
+import com.cm.batch.modal.PersonDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  */
 @Component("personFileBodyReader")
 @StepScope
-public class PersonFileBodyReader implements ItemStreamReader<Person> {
+public class PersonFileBodyReader implements ItemStreamReader<PersonDTO> {
 
     private final ItemStreamReader<FieldSet> itemStreamReader;
     private final Logger logger = LoggerFactory.getLogger(PersonFileBodyReader.class);
@@ -33,7 +33,7 @@ public class PersonFileBodyReader implements ItemStreamReader<Person> {
     }
 
     @Override
-    public Person read() throws Exception {
+    public PersonDTO read() throws Exception {
         return process(itemStreamReader.read());
     }
 
@@ -54,7 +54,7 @@ public class PersonFileBodyReader implements ItemStreamReader<Person> {
 
     @AfterStep
     public ExitStatus afterStep(StepExecution execution) {
-        if (recordCount == expectedRecordCount) {
+        if (recordCount == expectedRecordCount && execution.getReadCount()>0) {
             return execution.getExitStatus();
         } else {
             return ExitStatus.STOPPED;
@@ -68,11 +68,11 @@ public class PersonFileBodyReader implements ItemStreamReader<Person> {
         logger.info("Expected record count is {}", expectedRecordCount);
     }
 
-    private Person process(FieldSet fieldSet) {
-        Person result = null;
+    private PersonDTO process(FieldSet fieldSet) {
+        PersonDTO result = null;
         if (fieldSet != null) {
 
-                result = Person.builder()
+                result = PersonDTO.builder()
                         .name(fieldSet.readString(0))
                         .lastName(fieldSet.readString(1))
                         .age(fieldSet.readInt(2))

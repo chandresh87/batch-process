@@ -3,7 +3,9 @@ package com.cm.batch.config;
 import com.cm.batch.listener.JobListener;
 import com.cm.batch.listener.PreProcessFileListener;
 import com.cm.batch.listener.ReadFileStepListener;
-import com.cm.batch.modal.Person;
+import com.cm.batch.modal.PersonBO;
+import com.cm.batch.modal.PersonDTO;
+import com.cm.batch.processor.MappingItemProcessor;
 import com.cm.batch.reader.PreProcessFile;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.batch.core.Job;
@@ -18,13 +20,15 @@ import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.listener.ExecutionContextPromotionListener;
-import org.springframework.batch.core.listener.JobListenerFactoryBean;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.tasklet.MethodInvokingTaskletAdapter;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.support.CompositeItemProcessor;
+import org.springframework.batch.item.validator.BeanValidatingItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +38,9 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 
 @Configuration
 @EnableBatchProcessing
@@ -41,11 +48,11 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
 
     @Autowired
     @Qualifier("personFileBodyReader")
-    private ItemStreamReader<Person> personFileBodyReader;
+    private ItemStreamReader<PersonDTO> personFileBodyReader;
 
     @Autowired
     @Qualifier("dummuItemWriter")
-    private ItemWriter<Person> dummyWriter;
+    private ItemWriter<PersonBO> dummyWriter;
 
     @Autowired
     @Qualifier("batch-datasource")
@@ -82,6 +89,13 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     @Autowired
     private JobListener jobListener;
 
+    @Autowired
+    private BeanValidatingItemProcessor<PersonBO> beanValidatingItemProcessor;
+
+    @Autowired
+    @Qualifier("mapping-item-processor")
+    private ItemProcessor<PersonDTO, PersonBO> mappingItemProcessor;
+
 
     @Bean("split-body-footer-task")
     @StepScope
@@ -105,6 +119,7 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
                 .tasklet(systemCommandTasklet)
                 .listener(new PreProcessFileListener())
                 .listener(executionContextPromotionListener())
+                .allowStartIfComplete(true) //file we import is invalid
                 .build();
     }
 
@@ -130,21 +145,37 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
 				.build();
 	}
 
+	@Bean
+	public CompositeItemProcessor<PersonDTO, PersonBO> itemProcessor() {
+		CompositeItemProcessor<PersonDTO, PersonBO> itemProcessor =
+				new CompositeItemProcessor<>();
+
+        List itemProcessors= Arrays.asList(mappingItemProcessor, beanValidatingItemProcessor);
+		itemProcessor.setDelegates(itemProcessors);
+
+		return itemProcessor;
+	}
+
     @Bean("readBodyStep")
     public Step readBodystep() {
         return this.stepBuilderFactory.get("readChunkStep")
-                .<Person, Person>chunk(10)
+                .<PersonDTO, PersonBO>chunk(10)
                 .reader(personFileBodyReader)
+                .processor(itemProcessor())
                 .writer(dummyWriter)
                 .listener(new ReadFileStepListener())
+                .listener(personFileBodyReader)
                 .build();
     }
 
     @Bean
     public Job job() {
         return this.jobBuilderFactory.get("person-job")
-                .start(initializeBatch())
-                .next(readBodystep())
+                 .start(initializeBatch())
+                 .next(readBodystep())
+//                 .on("STOPPED")
+//                 .stopAndRestart(initializeBatch())
+//                 .end()
                 .validator(batchJobParamValidator)
                 .incrementer(jobParametersIncrementer)
                 .listener(jobListener)
