@@ -1,18 +1,22 @@
 package com.cm.batch.modal;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author chandresh.mishra
  */
 @Data
-@NoArgsConstructor
-public class PersonDTO {
+@Builder
+public class PersonDataModel {
 
     private String name;
     private String lastName;
     private int age;
     private double salary;
-    private AddressDTO addressDTO;
+    private int houseNumber;
+    private String line1;
+    private String line2;
+
+
 }
