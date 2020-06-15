@@ -16,6 +16,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -34,14 +35,6 @@ import java.util.TimeZone;
         entityManagerFactoryRef = "batchEntitMagerFactory")
 @EntityScan(basePackages = "com.cm.batch.modal")
 public class AppConfig {
-
-    private static final String PROPERTY_NAME_HIBERNATE_DIALECT = "hibernate.dialect";
-    private static final String PROPERTY_NAME_HIBERNATE_MAX_FETCH_DEPTH = "hibernate.max_fetch_depth";
-    private static final String PROPERTY_NAME_HIBERNATE_JDBC_FETCH_SIZE = "hibernate.jdbc.fetch_size";
-    private static final String PROPERTY_NAME_HIBERNATE_JDBC_BATCH_SIZE = "hibernate.jdbc.batch_size";
-    private static final String PROPERTY_NAME_HIBERNATE_SHOW_SQL = "hibernate.show_sql";
-    private static final String[] ENTITYMANAGER_PACKAGES_TO_SCAN = {"a.b.c.entities", "a.b.c.converters"};
-
 
     @Bean(name = "batch-transaction-manager")
     @Primary
@@ -86,8 +79,9 @@ public class AppConfig {
         return localContainerEntityManagerFactoryBean.getNativeEntityManagerFactory().createEntityManager();
     }
 
-//    @PostConstruct
-//    public void init() {
-//        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-//    }
+    @Bean
+    public RestTemplate restTemplate()
+    {
+        return new RestTemplate();
+    }
 }

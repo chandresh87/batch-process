@@ -1,7 +1,7 @@
 package com.cm.batch.processor;
 
 import com.cm.batch.modal.PersonBO;
-import com.cm.batch.modal.PersonDTO;
+import com.cm.batch.modal.PersonDataModel;
 import com.cm.batch.modal.mapper.PersonMapper;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @author chandresh.mishra
  */
 @Component("mapping-bo-item-processor")
-public class MappingBOItemProcessor implements ItemProcessor<PersonDTO, PersonBO> {
+public class MappingBOItemProcessor implements ItemProcessor<PersonDataModel, PersonBO> {
 
     private final PersonMapper personMapper;
 
@@ -20,7 +20,7 @@ public class MappingBOItemProcessor implements ItemProcessor<PersonDTO, PersonBO
     }
 
     @Override
-    public PersonBO process(PersonDTO item) throws Exception {
+    public PersonBO process(PersonDataModel item) throws Exception {
         return personMapper.personBOMapping(item);
     }
 }

@@ -4,7 +4,7 @@ import com.cm.batch.listener.JobListener;
 import com.cm.batch.listener.PreProcessFileListener;
 import com.cm.batch.listener.ReadFileStepListener;
 import com.cm.batch.modal.PersonBO;
-import com.cm.batch.modal.PersonDTO;
+import com.cm.batch.modal.PersonDataModel;
 import com.cm.batch.modal.PersonEntity;
 import com.cm.batch.reader.PreProcessFile;
 import org.apache.commons.io.FilenameUtils;
@@ -47,7 +47,7 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
 
     @Autowired
     @Qualifier("personFileBodyReader")
-    private ItemStreamReader<PersonDTO> personFileBodyReader;
+    private ItemStreamReader<PersonDataModel> personFileBodyReader;
 
     @Autowired
     @Qualifier("dummyItemWriter")
@@ -60,6 +60,10 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     @Autowired
     @Qualifier("batch-datasource")
     private DataSource batchDataSource;
+
+    @Autowired
+    @Qualifier("composite-writer")
+    private ItemWriter<PersonEntity> compositeWriter;
 
     @Autowired
     @Qualifier("batch-transaction-manager")
@@ -97,7 +101,7 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
 
     @Autowired
     @Qualifier("mapping-bo-item-processor")
-    private ItemProcessor<PersonDTO, PersonBO> mappingItemProcessor;
+    private ItemProcessor<PersonDataModel, PersonBO> mappingItemProcessor;
 
     @Autowired
     @Qualifier("mapping-entity-item-processor")
@@ -152,8 +156,8 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     }
 
     @Bean
-    public CompositeItemProcessor<PersonDTO, PersonEntity> itemProcessor() {
-        CompositeItemProcessor<PersonDTO, PersonEntity> itemProcessor =
+    public CompositeItemProcessor<PersonDataModel, PersonEntity> itemProcessor() {
+        CompositeItemProcessor<PersonDataModel, PersonEntity> itemProcessor =
                 new CompositeItemProcessor<>();
 
         List itemProcessors = Arrays.asList(mappingItemProcessor, beanValidatingItemProcessor, personBOPersonEntityItemProcessor);
@@ -165,10 +169,10 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     @Bean("readBodyStep")
     public Step readBodystep() {
         return this.stepBuilderFactory.get("readChunkStep")
-                .<PersonDTO, PersonEntity>chunk(10)
+                .<PersonDataModel, PersonEntity>chunk(10)
                 .reader(personFileBodyReader)
                 .processor(itemProcessor())
-                .writer(personEntityItemWriter)
+                .writer(compositeWriter)
                 .listener(new ReadFileStepListener())
                 .listener(personFileBodyReader)
                 .build();

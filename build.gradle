@@ -29,6 +29,7 @@ dependencies {
 	implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 	implementation group: 'io.findify', name: 's3mock_2.13', version: '0.2.6'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
