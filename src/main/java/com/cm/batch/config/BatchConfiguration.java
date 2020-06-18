@@ -204,7 +204,7 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     protected JobRepository createJobRepository() throws Exception {
 
         JobRepositoryFactoryBean factoryBean = new JobRepositoryFactoryBean();
-        //factoryBean.setTablePrefix("defaultdb.cm_");
+        factoryBean.setTablePrefix("cm_batch_");
         factoryBean.setIsolationLevelForCreate("ISOLATION_REPEATABLE_READ");
         factoryBean.setTransactionManager(transactionManager);
         factoryBean.setDataSource(this.batchDataSource);
@@ -223,7 +223,7 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
 
         JobExplorerFactoryBean explorerFactoryBean = new JobExplorerFactoryBean();
         explorerFactoryBean.setDataSource(this.batchDataSource);
-        //explorerFactoryBean.setTablePrefix("defaultdb.cm_");
+        explorerFactoryBean.setTablePrefix("cm_batch_");
         explorerFactoryBean.afterPropertiesSet();
         return explorerFactoryBean.getObject();
     }

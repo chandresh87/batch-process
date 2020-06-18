@@ -24,7 +24,7 @@ spring:
 
   batch:
     initialize-schema: always
-    table-prefix: defaultdb.cm_
+    table-prefix: cm_
   #main:
     #allow-bean-definition-overriding: true
     job:
