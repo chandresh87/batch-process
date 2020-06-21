@@ -11,6 +11,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +31,7 @@ public class PersonRemoteClient {
         this.personMapper = personMapper;
     }
 
+    @CircuitBreaker
     public void savePerson(PersonEntity personEntity) {
 
         final PersonDTO personDTO = personMapper.personEntityToDTO(personEntity);
@@ -53,4 +55,5 @@ public class PersonRemoteClient {
             e.printStackTrace();
         }
     }
+
 }
