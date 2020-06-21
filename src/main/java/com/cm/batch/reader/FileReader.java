@@ -34,8 +34,7 @@ public class FileReader {
     @Bean("flatFileBodyReader")
     public FlatFileItemReader<FieldSet> personFileReader(@Value("#{jobExecutionContext['dataFile']}") FileSystemResource fileName) {
 
-        System.out.println(
-                String.format("fileName = %s", fileName));
+        logger.info("Reading file with name {}", fileName);
 
         return new FlatFileItemReaderBuilder<FieldSet>()
                 .name("personItemReader")
@@ -45,6 +44,7 @@ public class FileReader {
                 .names(getNames())
                 .fieldSetMapper(new PassThroughFieldSetMapper())
                 .linesToSkip(1)
+                //.saveState(false)
                 .build();
 
     }
@@ -52,8 +52,7 @@ public class FileReader {
     @Bean("flatFileFooterReader")
     public FlatFileItemReader<FieldSet> personFileFooterReader(@Value("#{jobExecutionContext['footerFile']}") FileSystemResource fileName) {
 
-        System.out.println(
-                String.format("footerFile fileName = %s", fileName));
+        logger.info("footerFile fileName {}", fileName);
 
         return new FlatFileItemReaderBuilder<FieldSet>()
                 .name("personFooterItemReader")
@@ -62,6 +61,7 @@ public class FileReader {
                 .columns(new Range[]{new Range(1, 10)})
                 .names(new String[]{"count"})
                 .fieldSetMapper(new PassThroughFieldSetMapper())
+                //.saveState(false)
                 .build();
 
     }

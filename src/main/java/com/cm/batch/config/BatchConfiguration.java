@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -107,6 +108,10 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     @Qualifier("mapping-entity-item-processor")
     private ItemProcessor<PersonBO, PersonEntity> personBOPersonEntityItemProcessor;
 
+    @Autowired
+    @Qualifier("batchExecutor")
+    private TaskExecutor taskExecutor;
+
     @Bean("split-body-footer-task")
     @StepScope
     public MethodInvokingTaskletAdapter preProcessFileAdapter(@Value("#{jobExecutionContext['customerFile']}") String file, PreProcessFile preProcessFile) {
@@ -169,12 +174,13 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
     @Bean("readBodyStep")
     public Step readBodystep() {
         return this.stepBuilderFactory.get("readChunkStep")
-                .<PersonDataModel, PersonEntity>chunk(10)
+                .<PersonDataModel, PersonEntity>chunk(2)
                 .reader(personFileBodyReader)
                 .processor(itemProcessor())
                 .writer(compositeWriter)
                 .listener(new ReadFileStepListener())
                 .listener(personFileBodyReader)
+               // .taskExecutor(taskExecutor)
                 .build();
     }
 
@@ -183,9 +189,6 @@ public class BatchConfiguration extends DefaultBatchConfigurer {
         return this.jobBuilderFactory.get("person-job")
                 .start(initializeBatch())
                 .next(readBodystep())
-//                 .on("STOPPED")
-//                 .stopAndRestart(initializeBatch())
-//                 .end()
                 .validator(batchJobParamValidator)
                 .incrementer(jobParametersIncrementer)
                 .listener(jobListener)
