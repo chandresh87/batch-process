@@ -1,15 +1,6 @@
 # batch-process
+
+## It process the fixed width flat file and write data to database and send it to external serivce.
+## System reciveve the file from AWS S3.
 ![Screenshot](system-design.jpg)
 
-#sample File
-
-Name -       lastName-         age- salary- HouseNo -AddLine1 - AddLine2
-Andrew |        Green          25 26000     10 Avenue      Glasgow 
-Ben    |        Brown          32 28500     11 Avenue      Glasgow 
-Celia  |       Black          29 28000     12 Avenue      Glasgow 
-Steve  |       Pink           41 52000     13 Avenue      Glasgow 
-Andrew |    Green          25 26000     10 Avenue      Glasgow 
-Ben    |      Brown          32 28500     11 Avenue      Glasgow 
-Celia  |        Black          29 28000     12 Avenue      Glasgow 
-Steve  |        Pink           41 52000     13 Avenue      Glasgow 
-8      |   
