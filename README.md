@@ -1,2 +1,2 @@
 # batch-process
-![Screenshot](system-design.JPG)
+![Screenshot](system-design.jpg)
